@@ -1,0 +1,228 @@
+// Utilitários unificados de autenticação e autorização
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../config/security-config');
+const logger = require('../utils/logger');
+
+// Middleware de autenticação — verifica token JWT
+const authenticateToken = async (ctx, next) => {
+    try {
+        const authHeader = ctx.headers.authorization;
+        
+        if (!authHeader) {
+            console.log('Token não encontrado ou formato inválido');
+            ctx.status = 401;
+            ctx.body = { 
+                success: false, 
+                message: 'Token de acesso requerido' 
+            };
+            return;
+        }
+
+        const token = authHeader.split(' ')[1]; // Remove "Bearer " do início
+        
+        if (!token) {
+            ctx.status = 401;
+            ctx.body = { 
+                success: false, 
+                message: 'Token de acesso requerido' 
+            };
+            return;
+        }
+
+        // Token de desenvolvimento
+        if (token === 'dev_token_responsavel_teste' && process.env.NODE_ENV !== 'production') {
+            ctx.user = {
+                id: 1,
+                email: 'ana.responsavel@teste.kanghoo.com',
+                tipo: 'responsavel',
+                nome: 'Responsável Teste'
+            };
+            await next();
+            return;
+        }
+
+        // Verificar e decodificar o token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        // Adicionar informações do usuário ao contexto
+        ctx.user = {
+            id: decoded.userId,  // Corrigido: usar userId em vez de id
+            email: decoded.email,
+            tipo: decoded.tipo,
+            nome: decoded.nome || decoded.nomeCompleto  // Suporte para ambos os campos
+        };
+
+        await next();
+    } catch (error) {
+        // Log mais detalhado para debug (apenas em desenvolvimento)
+        if (process.env.NODE_ENV === 'development') {
+            logger.error('🔐 Erro na autenticação:', {
+                tipo: error.name,
+                mensagem: error.message,
+                rota: ctx.path,
+                metodo: ctx.method,
+                ip: ctx.ip
+            });
+        }
+        
+        if (error.name === 'TokenExpiredError') {
+            ctx.status = 401;
+            ctx.body = { 
+                success: false, 
+                message: 'Token expirado' 
+            };
+        } else if (error.name === 'JsonWebTokenError') {
+            ctx.status = 401;
+            ctx.body = { 
+                success: false, 
+                message: 'Token inválido ou expirado' 
+            };
+        } else {
+            ctx.status = 500;
+            ctx.body = { 
+                success: false, 
+                message: 'Erro interno do servidor' 
+            };
+        }
+    }
+};
+
+// Middleware de verificação de perfil/role
+const requireRole = (allowedTypes) => {
+    return async (ctx, next) => {
+        if (!ctx.user) {
+            ctx.status = 401;
+            ctx.body = { 
+                success: false, 
+                message: 'Usuário não autenticado' 
+            };
+            return;
+        }
+
+        const types = Array.isArray(allowedTypes) ? allowedTypes : [allowedTypes];
+        
+        if (!types.includes(ctx.user.tipo)) {
+            ctx.status = 403;
+            ctx.body = { 
+                success: false, 
+                message: 'Acesso negado. Permissão insuficiente.' 
+            };
+            return;
+        }
+
+        await next();
+    };
+};
+
+// Middleware de autenticação opcional — não bloqueia sem token
+const optionalAuth = async (ctx, next) => {
+    try {
+        const authHeader = ctx.headers.authorization;
+        
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            
+            if (token) {
+                const decoded = jwt.verify(token, JWT_SECRET);
+                ctx.user = {
+                    id: decoded.id,
+                    email: decoded.email,
+                    tipo: decoded.tipo,
+                    nome: decoded.nome
+                };
+            }
+        }
+    } catch (error) {
+        // Ignorar erros de token em autenticação opcional
+        logger.info('Token opcional inválido:', error.message);
+    }
+    
+    await next();
+};
+
+// Verificação de responsável
+const verificarResponsavel = async (ctx, next) => {
+    try {
+        if (!ctx.user || ctx.user.tipo !== 'responsavel' && ctx.user.tipo !== 'admin') {
+            ctx.status = 403;
+            ctx.body = { 
+                success: false, 
+                message: 'Acesso negado. Apenas responsáveis podem acessar este recurso.' 
+            };
+            return;
+        }
+        await next();
+    } catch (error) {
+        logger.error('Erro na verificação de responsável:', error);
+        ctx.status = 500;
+        ctx.body = { 
+            success: false, 
+            message: 'Erro interno do servidor' 
+        };
+    }
+};
+
+// Verificação de motorista
+const verificarMotorista = async (ctx, next) => {
+    try {
+        if (!ctx.user || (ctx.user.tipo !== 'motorista_escolar' && ctx.user.tipo !== 'motorista_excursao' && ctx.user.tipo !== 'motorista_escolar_excursao')) {
+            ctx.status = 403;
+            ctx.body = { 
+                success: false, 
+                message: 'Acesso negado. Apenas motoristas podem acessar este recurso.' 
+            };
+            return;
+        }
+        await next();
+    } catch (error) {
+        logger.error('Erro na verificação de motorista:', error);
+        ctx.status = 500;
+        ctx.body = { 
+            success: false, 
+            message: 'Erro interno do servidor' 
+        };
+    }
+};
+
+// Verificação de motorista de excursão
+const verificarMotoristaExcursao = async (ctx, next) => {
+    try {
+        if (!ctx.user || ctx.user.tipo !== 'motorista_excursao' && ctx.user.tipo !== 'motorista_escolar_excursao') {
+            ctx.status = 403;
+            ctx.body = { 
+                success: false, 
+                message: 'Acesso negado. Apenas motoristas de excursão podem acessar este recurso.' 
+            };
+            return;
+        }
+        await next();
+    } catch (error) {
+        logger.error('Erro na verificação de motorista de excursão:', error);
+        ctx.status = 500;
+        ctx.body = { 
+            success: false, 
+            message: 'Erro interno do servidor' 
+        };
+    }
+};
+
+// Geração de token JWT
+const generateToken = (payload, expiresIn = '24h') => {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn });
+};
+
+// Verificação de token JWT
+const verifyToken = (token) => {
+    return jwt.verify(token, JWT_SECRET);
+};
+
+module.exports = {
+    authenticateToken,
+    requireRole,
+    optionalAuth,
+    verificarResponsavel,
+    verificarMotorista,
+    verificarMotoristaExcursao,
+    generateToken,
+    verifyToken
+};

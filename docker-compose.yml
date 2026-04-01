@@ -1,0 +1,220 @@
+# Orquestração de Serviços — Kanghoo (Desenvolvimento)
+
+services:
+  # Aplicação Backend
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kanghoo-app
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=5000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-transporte_escolar}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:14-alpine
+    container_name: kanghoo-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-transporte_escolar}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=pt_BR.UTF-8 --lc-ctype=pt_BR.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-transporte_escolar}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Cache e Sessões — Redis
+  redis:
+    image: redis:7-alpine
+    container_name: kanghoo-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Proxy Reverso — Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: kanghoo-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Coleta de Métricas — Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: kanghoo-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Dashboards — Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: kanghoo-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+    depends_on:
+      - prometheus
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Métricas do Sistema Operacional
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: kanghoo-node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Métricas do Banco de Dados
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: kanghoo-postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/${POSTGRES_DB:-transporte_escolar}?sslmode=disable
+    depends_on:
+      - postgres
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Métricas do Cache
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: kanghoo-redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - kanghoo-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+# Volumes Persistentes
+volumes:
+  postgres_data:
+    driver: local
+    name: kanghoo_postgres_data
+  redis_data:
+    driver: local
+    name: kanghoo_redis_data
+  prometheus_data:
+    driver: local
+    name: kanghoo_prometheus_data
+  grafana_data:
+    driver: local
+    name: kanghoo_grafana_data
+
+# Rede Interna
+networks:
+  kanghoo-network:
+    driver: bridge
+    name: kanghoo-network
