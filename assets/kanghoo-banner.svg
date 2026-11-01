@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgK" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#040b14"/>
+      <stop offset="50%" stop-color="#0b172a"/>
+      <stop offset="100%" stop-color="#06121e"/>
+    </linearGradient>
+    <linearGradient id="accentK" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <pattern id="mapGrid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#1e293b" stroke-width="0.6" stroke-opacity="0.5"/>
+    </pattern>
+  </defs>
+  <style>
+    .title { font-family: 'Segoe UI', system-ui, sans-serif; font-weight: 800; font-size: 40px; fill: #f8fafc; letter-spacing: -0.6px; }
+    .sub { font-family: 'Segoe UI', system-ui, sans-serif; font-weight: 600; font-size: 18px; fill: url(#accentK); }
+    .meta { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; fill: #94a3b8; }
+    .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; font-weight: 600; }
+    .routeStream { stroke-dasharray: 8 6; animation: streamFlow 2s linear infinite; }
+    .radarRing { transform-origin: 980px 160px; animation: radarPulse 3.5s ease-out infinite; }
+    .radarSweep { transform-origin: 980px 160px; animation: sweepRot 7s linear infinite; }
+    .gpsDot { animation: gpsBlink 1.8s ease-in-out infinite; }
+    @keyframes streamFlow {
+      to { stroke-dashoffset: -28; }
+    }
+    @keyframes radarPulse {
+      0% { transform: scale(0.7); opacity: 0.8; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+    @keyframes sweepRot {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes gpsBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+  </style>
+
+  <rect width="1200" height="320" rx="16" fill="url(#bgK)"/>
+  <rect width="1200" height="320" rx="16" fill="url(#mapGrid)"/>
+  <rect x="1.5" y="1.5" width="1197" height="317" rx="14.5" fill="none" stroke="url(#accentK)" stroke-width="1.5" stroke-opacity="0.45"/>
+
+  <!-- Left Content -->
+  <g transform="translate(64, 52)">
+    <rect x="0" y="0" width="335" height="28" rx="14" fill="#0f172a" stroke="#10b981" stroke-width="1" stroke-opacity="0.5"/>
+    <circle cx="16" cy="14" r="4.5" fill="#10b981" class="gpsDot"/>
+    <text x="30" y="18" class="mono" fill="#e2e8f0">REAL-TIME GPS TELEMETRY · 23+ REST ROUTES</text>
+
+    <text x="0" y="76" class="title">Kanghoo Mobility Platform</text>
+    <text x="0" y="108" class="sub">School Transit &amp; Charter Logistics · Clean Architecture · Live Tracking</text>
+    <text x="0" y="140" class="meta">Node.js · Koa.js · Express · PostgreSQL · Redis · Socket.IO · Docker · Prometheus &amp; Grafana</text>
+
+    <g transform="translate(0, 170)">
+      <rect x="0" y="0" width="148" height="30" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1"/>
+      <text x="74" y="19" text-anchor="middle" class="mono" fill="#10b981">Clean Architecture</text>
+
+      <rect x="160" y="0" width="132" height="30" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+      <text x="226" y="19" text-anchor="middle" class="mono" fill="#38bdf8">Socket.IO + Redis</text>
+
+      <rect x="304" y="0" width="124" height="30" rx="6" fill="#0f172a" stroke="#818cf8" stroke-width="1"/>
+      <text x="366" y="19" text-anchor="middle" class="mono" fill="#818cf8">PostgreSQL 14+</text>
+
+      <rect x="440" y="0" width="136" height="30" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+      <text x="508" y="19" text-anchor="middle" class="mono" fill="#38bdf8">Docker + Nginx</text>
+
+      <rect x="588" y="0" width="150" height="30" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1"/>
+      <text x="663" y="19" text-anchor="middle" class="mono" fill="#10b981">Prometheus/Grafana</text>
+    </g>
+  </g>
+
+  <!-- Right Live GPS Telemetry Visualization -->
+  <circle cx="980" cy="160" r="95" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+  <circle cx="980" cy="160" r="65" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="5 5" stroke-opacity="0.45"/>
+  <circle cx="980" cy="160" r="65" fill="none" stroke="#10b981" stroke-width="1.5" class="radarRing"/>
+  <circle cx="980" cy="160" r="32" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.45"/>
+
+  <g class="radarSweep">
+    <line x1="980" y1="160" x2="980" y2="65" stroke="#10b981" stroke-width="2" stroke-opacity="0.8"/>
+    <path d="M980,160 L980,65 A95,95 0 0,1 1055,102 Z" fill="#10b981" fill-opacity="0.12"/>
+  </g>
+
+  <!-- Simulated GPS Route Path -->
+  <path d="M 915 205 Q 950 140 980 160 T 1040 115" fill="none" stroke="#38bdf8" stroke-width="2.5" class="routeStream"/>
+  <circle cx="915" cy="205" r="5" fill="#38bdf8"/>
+  <circle cx="980" cy="160" r="6" fill="#10b981" class="gpsDot"/>
+  <circle cx="1040" cy="115" r="5" fill="#818cf8"/>
+
+  <rect x="900" y="268" width="160" height="24" rx="12" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+  <text x="980" y="284" text-anchor="middle" class="mono" fill="#10b981">WS TELEMETRY ACTIVE</text>
+</svg>
