@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/kanghoo-banner.svg" width="100%" alt="Kanghoo - Real-Time School Transit & Charter Logistics Platform" />
+<img src="./assets/kanghoo-banner.svg" width="100%" alt="Kanghoo - School Transit & Excursion Management Platform" />
 
 <br />
 
@@ -12,194 +12,127 @@
 [![Docker](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Prometheus](https://img.shields.io/badge/Prometheus_&_Grafana-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/)
 
-<br />
-
-**[English (EN-US)](#-english-en-us--kanghoo-mobility--telemetry-platform)** · **[Português (PT-BR)](#-português-pt-br--kanghoo-plataforma-de-transporte-escolar-e-excursões)**
-
 </div>
 
 ---
 
-# 🇺🇸 English (EN-US) | Kanghoo Mobility & Telemetry Platform
+## 🌎 Overview (EN-US) · Visão Geral (PT-BR)
 
-**Kanghoo** is a full-stack logistics and mobility platform designed for school transit and charter excursions. It provides real-time vehicle GPS telemetry, passenger boarding/alighting check-ins, automated guardian notifications, subscription/payment workflows, and multi-role access control (Guardians, Drivers, Monitors, and Administrators).
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🇺🇸 English (EN-US)
+
+**Kanghoo** is a full-stack school transport and excursion management platform featuring real-time vehicle GPS telemetry, student boarding/alighting confirmation, automated guardian notifications, and role-based access control (`Guardians`, `School Drivers`, `Excursion Drivers`, and `Administrators`).
+
+- **Clean Architecture & DI:** Backend structured into `Domain`, `Application`, `Infrastructure`, and `Interface` layers with **Awilix** dependency injection across **23+ REST route modules**.
+- **Real-Time GPS Telemetry:** Continuous low-latency vehicle position tracking and route geofencing powered by **Socket.IO** and **Redis 7+** (`ioredis`).
+- **Relational Modeling & Security:** Normalized **PostgreSQL 14+** schema, stateless **JWT** authentication, **Bcrypt** password hashing, and **koa-ratelimit** protection.
+- **Containers & Observability:** Development and production parity via **Docker Compose**, **Nginx** reverse proxy with SSL/TLS, and real-time node/database/cache metrics via **Prometheus** and **Grafana**.
+
+</td>
+<td width="50%" valign="top">
+
+### 🇧🇷 Português (PT-BR)
+
+**Kanghoo** é uma plataforma completa para gestão de transporte escolar e excursões com telemetria GPS em tempo real, conferência de embarque e desembarque de alunos, notificações automáticas para responsáveis e perfis de acesso hierárquicos (`Responsáveis`, `Motoristas Escolares`, `Motoristas de Excursão` e `Administradores`).
+
+- **Clean Architecture e Injeção de Dependências:** Back-end organizado nas camadas `Domain`, `Application`, `Infrastructure` e `Interface` com **Awilix** em mais de **23 módulos de rotas REST**.
+- **Telemetria GPS em Tempo Real:** Atualização contínua da posição dos veículos com baixa latência e cercas eletrônicas (`geofencing`) via **Socket.IO** e **Redis 7+** (`ioredis`).
+- **Banco de Dados e Segurança:** Esquema relacional em **PostgreSQL 14+**, autenticação **JWT**, criptografia de senhas com **Bcrypt** e middleware de **rate limiting**.
+- **Containers e Observabilidade:** Paridade entre desenvolvimento e produção com **Docker Compose**, proxy reverso **Nginx** com SSL/TLS e monitoramento em tempo real com **Prometheus** e **Grafana**.
+
+</td>
+</tr>
+</table>
 
 ---
 
-### 🏗️ Architectural Highlights
+## 🛠️ Technology Stack · Stack Tecnológica
 
-- **Clean Architecture & Dependency Injection:** Strict separation across `domain`, `application`, `infrastructure`, and `interface` layers inside `server/src/`, wired with **Awilix** dependency injection containers.
-- **Real-Time GPS Telemetry Engine:** Low-latency bidirectional communication via **Socket.IO / WebSockets** backed by **Redis 7+** for live vehicle tracking, speed monitoring, and route geofencing.
-- **23+ RESTful API Routes:** Comprehensive HTTP layer covering authentication (`JWT` + `Bcrypt`), role-based access control (`RBAC`), passenger check-ins, route scheduling, excursion packages, notifications, and analytics.
-- **Production-Grade Security & Observability:** Rate limiting, request schema validation (`Joi`), structured logging (`Winston`), reverse proxy hardening (`Nginx`), and real-time metrics collection via **Prometheus** and **Grafana** dashboards.
-- **Multi-Container Orchestration:** Fully containerized development (`docker-compose.yml`) and production (`docker-compose.prod.yml`) environments.
-
----
-
-### 🛠️ Technology Stack
-
-| Layer | Technology |
+| Layer / Camada | Technology / Tecnologia |
 | :--- | :--- |
-| **Runtime** | Node.js v20+ (ES Modules) |
-| **HTTP Frameworks** | Koa.js & Express.js |
-| **Relational Database** | PostgreSQL 14+ (Normalized schema + SQL migrations) |
-| **In-Memory Cache & Pub/Sub** | Redis 7+ |
-| **Real-Time Telemetry** | Socket.IO / WebSockets |
-| **Dependency Injection** | Awilix |
-| **Security & Validation** | JWT, Bcrypt, Helmet, Rate Limiting, Joi |
-| **Reverse Proxy** | Nginx |
-| **Containerization** | Docker & Docker Compose |
-| **Observability** | Prometheus, Grafana & Winston Structured Logging |
-| **Testing & Quality** | Jest, Supertest & ESLint |
+| **Runtime & HTTP** | Node.js v20+ (ES Modules) · Koa.js (`koa-router`, `koa-bodyparser`, `koa-compress`, `@koa/cors`, `@koa/multer`) |
+| **Architecture & DI** | Clean Architecture (`Domain`, `Application`, `Infrastructure`, `Interface`) · Awilix |
+| **Database & Cache** | PostgreSQL 14+ (`pg`) · Redis 7+ (`ioredis`) |
+| **Real-Time & Maps** | Socket.IO / WebSockets · Google Maps Services (`@googlemaps/google-maps-services-js`) · Nodemailer |
+| **Security** | JWT (`jsonwebtoken`) · Bcrypt (`bcryptjs`) · Rate Limiting (`koa-ratelimit`) |
+| **Infra & Proxy** | Docker · Docker Compose (`dev` & `prod`) · Nginx Reverse Proxy (SSL/TLS) |
+| **Observability** | Prometheus · Grafana · Node Exporter · Postgres Exporter · Redis Exporter |
+| **Testing & Quality** | Jest · Supertest · ESLint · Prettier · Husky |
 
 ---
 
-### 📂 Repository Structure
+## 📂 Project Structure · Estrutura do Projeto
 
 ```text
-├── server/                  # Backend application (Node.js + Koa.js)
-│   └── src/
-│       ├── application/     # Application use cases & orchestration
-│       ├── config/          # Environment, database & service configuration
-│       ├── controllers/     # HTTP request handlers
-│       ├── domain/          # Core domain entities & repository contracts
-│       ├── infrastructure/  # PostgreSQL repositories & external adapters
-│       ├── interface/       # Delivery layer (HTTP & WebSocket gateways)
-│       ├── middlewares/     # Authentication, RBAC, rate-limiting & validation
-│       ├── routes/          # 23+ modular REST API routes
-│       ├── services/        # Business services (GPS, alerts, billing)
-│       └── utils/           # Shared utilities (logger, geospatial math, cache)
-├── frontend/                # Web client interface
-│   └── public/              # Role-specific portals, interactive maps & assets
-├── database/                # PostgreSQL initialization & migration scripts
-├── nginx/                   # Reverse proxy & TLS configuration
+├── server/                  # Backend (Node.js + Koa.js)
+│   ├── src/
+│   │   ├── application/     # Use cases & application orchestration
+│   │   ├── config/          # Environment, database & container wiring
+│   │   ├── controllers/     # HTTP controllers
+│   │   ├── domain/          # Domain entities & repository contracts
+│   │   ├── infrastructure/  # PostgreSQL repositories & external services
+│   │   ├── interface/       # Delivery layer (HTTP/WebSocket)
+│   │   ├── middlewares/     # Auth, RBAC, rate-limiting & validation
+│   │   ├── realtime/        # Socket.IO event handlers & telemetry hub
+│   │   ├── routes/          # 23+ modular REST API routes
+│   │   └── utils/           # Geolocation, caching & notification utilities
+│   └── tests/               # Integration, security & WebSocket test suites
+├── frontend/                # Web client interface & static portals
+├── database/                # PostgreSQL schema & seed scripts
+├── nginx/                   # Nginx reverse proxy & TLS configuration
 ├── monitoring/              # Prometheus targets & Grafana dashboards
-├── docker-compose.yml       # Local development orchestration
-└── docker-compose.prod.yml  # Production deployment orchestration
+├── docker-compose.yml       # Development environment orchestration
+└── docker-compose.prod.yml  # Production environment orchestration
 ```
 
 ---
 
-### 🚀 Quick Start
+## 🚀 Quick Start · Início Rápido
 
 ```bash
-# 1. Install backend dependencies
+# 1. Install backend dependencies / Instalar dependências
 cd server && npm install
 
-# 2. Configure environment variables
+# 2. Configure environment variables / Configurar variáveis de ambiente
 cp .env.example .env
 
-# 3. Start the development server with hot-reload
+# 3. Start development server / Iniciar servidor em modo de desenvolvimento
 npm run dev
 ```
 
-The API and web server will be available at `http://localhost:3000`.
-
-#### Useful Commands
+Server runs at / Servidor disponível em: `http://localhost:3000`
 
 ```bash
-npm run dev          # Start development server with hot-reload (nodemon)
-npm test             # Run automated test suites (Jest)
-npm run lint         # Run static code analysis (ESLint)
-npm run format       # Format source files (Prettier)
+npm run dev            # Hot-reload development server (nodemon)
+npm test               # Run automated test suites (Jest + Supertest)
+npm run test:coverage  # Generate test coverage report
+npm run lint           # Run static code analysis (ESLint)
+npm run format         # Format source code (Prettier)
 ```
 
 ---
 
-### 📚 Technical Documentation Index
+## 📚 Technical Documentation · Documentação Técnica
 
-| Document | Description |
+| Document / Documento | Scope / Descrição |
 | :--- | :--- |
-| [Architecture (`docs/ARQUITETURA.md`)](docs/ARQUITETURA.md) | Clean Architecture layers, design patterns, and module boundaries |
-| [API Reference (`docs/API.md`)](docs/API.md) | REST endpoints, request/response payloads, and WebSocket events |
-| [Configuration (`docs/guias/CONFIGURACAO.md`)](docs/guias/CONFIGURACAO.md) | Environment variables, PostgreSQL, and Redis setup |
-| [Development Guide (`docs/guias/DESENVOLVIMENTO.md`)](docs/guias/DESENVOLVIMENTO.md) | Engineering workflow, coding standards, and testing conventions |
-| [Test Accounts (`docs/guias/USUARIOS_TESTE.md`)](docs/guias/USUARIOS_TESTE.md) | Seeded credentials for local development and QA validation |
-| [Deployment (`docs/producao/DEPLOY.md`)](docs/producao/DEPLOY.md) | Production deployment guide using Docker Compose and Nginx |
-| [Security (`docs/producao/SEGURANCA.md`)](docs/producao/SEGURANCA.md) | Security hardening, JWT policies, and firewall configuration |
-| [Monitoring (`docs/producao/MONITORAMENTO.md`)](docs/producao/MONITORAMENTO.md) | Prometheus metrics, Grafana dashboards, and backup routines |
-
----
----
-
-# 🇧🇷 Português (PT-BR) | Kanghoo: Plataforma de Transporte Escolar e Excursões
-
-**Kanghoo** é uma plataforma completa para gestão de transporte escolar e excursões com rastreamento GPS veicular em tempo real, conferência de embarque e desembarque, notificações automáticas para responsáveis, gestão financeira e controle de acesso por múltiplos perfis (Responsáveis, Motoristas, Monitores e Administradores).
+| [Architecture (`docs/ARQUITETURA.md`)](docs/ARQUITETURA.md) | Clean Architecture layers and design patterns / Camadas do sistema e padrões de projeto |
+| [API Reference (`docs/API.md`)](docs/API.md) | REST endpoints, payloads, and examples / Endpoints, payloads e exemplos |
+| [Configuration (`docs/guias/CONFIGURACAO.md`)](docs/guias/CONFIGURACAO.md) | Environment variables and database setup / Variáveis de ambiente e banco de dados |
+| [Development (`docs/guias/DESENVOLVIMENTO.md`)](docs/guias/DESENVOLVIMENTO.md) | Workflow and coding standards / Fluxo de trabalho e padrões de código |
+| [Test Accounts (`docs/guias/USUARIOS_TESTE.md`)](docs/guias/USUARIOS_TESTE.md) | Seeded development credentials / Credenciais para ambiente de desenvolvimento |
+| [Deployment (`docs/producao/DEPLOY.md`)](docs/producao/DEPLOY.md) | Docker Compose and Nginx deployment / Deploy com Docker e Nginx |
+| [Security (`docs/producao/SEGURANCA.md`)](docs/producao/SEGURANCA.md) | Hardening and firewall rules / Hardening e configurações de firewall |
+| [Monitoring (`docs/producao/MONITORAMENTO.md`)](docs/producao/MONITORAMENTO.md) | Prometheus, Grafana, logs, and backups / Métricas, logs e backup |
 
 ---
 
-### 🏗️ Destaques de Arquitetura
+<div align="center">
 
-- **Clean Architecture e Injeção de Dependência:** Separação rigorosa de responsabilidades entre as camadas `domain`, `application`, `infrastructure` e `interface` em `server/src/`, orquestradas com **Awilix**.
-- **Motor de Telemetria GPS em Tempo Real:** Comunicação bidirecional de baixa latência via **Socket.IO / WebSocket** integrada ao **Redis 7+** para rastreamento ao vivo de rotas, velocidade e cercas eletrônicas (geofencing).
-- **Mais de 23 Rotas RESTful:** Camada HTTP completa cobrindo autenticação (`JWT` + `Bcrypt`), controle de acesso baseado em papéis (`RBAC`), check-in de passageiros, agendamento de rotas, pacotes de excursão e relatórios.
-- **Segurança e Observabilidade de Produção:** Rate limiting, validação de esquemas (`Joi`), logs estruturados (`Winston`), proxy reverso (`Nginx`) e coleta de métricas em tempo real com **Prometheus** e **Grafana**.
-- **Orquestração Multi-Container:** Ambientes de desenvolvimento (`docker-compose.yml`) e produção (`docker-compose.prod.yml`) totalmente containerizados.
+**Rodrigo Souza Feliciano** · Full Stack Software Developer & QA Analyst  
+[Portfolio](https://portfolio-rodrigo-pink.vercel.app) · [LinkedIn](https://www.linkedin.com/in/rodrigosouzafeliciano/) · [Online Resume](https://github.com/rodrigosouzafeliciano/curriculo-online)
 
----
-
-### 🛠️ Stack Tecnológica
-
-| Camada | Tecnologia |
-| :--- | :--- |
-| **Runtime** | Node.js v20+ (ES Modules) |
-| **Framework HTTP** | Koa.js & Express.js |
-| **Banco de Dados** | PostgreSQL 14+ (Modelagem relacional e migrações SQL) |
-| **Cache e Pub/Sub** | Redis 7+ |
-| **Tempo Real** | Socket.IO / WebSocket |
-| **Injeção de Dependência** | Awilix |
-| **Segurança e Validação** | JWT, Bcrypt, Helmet, Rate Limiting, Joi |
-| **Proxy Reverso** | Nginx |
-| **Containerização** | Docker / Docker Compose |
-| **Monitoramento** | Prometheus, Grafana e Logs Estruturados (Winston) |
-| **Testes e Qualidade** | Jest, Supertest e ESLint |
-
----
-
-### 🚀 Início Rápido
-
-```bash
-# 1. Instalar dependências do servidor
-cd server && npm install
-
-# 2. Configurar variáveis de ambiente
-cp .env.example .env
-
-# 3. Iniciar em modo de desenvolvimento
-npm run dev
-```
-
-O servidor estará disponível em `http://localhost:3000`.
-
-#### Comandos Úteis
-
-```bash
-npm run dev          # Servidor com hot-reload (nodemon)
-npm test             # Executar suíte de testes automatizados
-npm run lint         # Análise estática de código
-npm run format       # Formatação automática de código
-```
-
----
-
-### 📚 Documentação Técnica
-
-| Documento | Descrição |
-| :--- | :--- |
-| [Arquitetura (`docs/ARQUITETURA.md`)](docs/ARQUITETURA.md) | Camadas do sistema e padrões de projeto |
-| [Referência de APIs (`docs/API.md`)](docs/API.md) | Endpoints, payloads e exemplos |
-| [Configuração (`docs/guias/CONFIGURACAO.md`)](docs/guias/CONFIGURACAO.md) | Variáveis de ambiente e banco de dados |
-| [Desenvolvimento (`docs/guias/DESENVOLVIMENTO.md`)](docs/guias/DESENVOLVIMENTO.md) | Fluxo de trabalho e padrões de código |
-| [Usuários de Teste (`docs/guias/USUARIOS_TESTE.md`)](docs/guias/USUARIOS_TESTE.md) | Credenciais para ambiente de desenvolvimento |
-| [Deploy (`docs/producao/DEPLOY.md`)](docs/producao/DEPLOY.md) | Deploy com Docker e Nginx |
-| [Segurança (`docs/producao/SEGURANCA.md`)](docs/producao/SEGURANCA.md) | Hardening e configurações de firewall |
-| [Monitoramento (`docs/producao/MONITORAMENTO.md`)](docs/producao/MONITORAMENTO.md) | Métricas, logs e backup |
-
----
-
-### 👤 Autor / Author
-
-**Rodrigo Souza Feliciano** · Full Stack Software Developer
-- **Portfolio:** [portfolio-rodrigo-pink.vercel.app](https://portfolio-rodrigo-pink.vercel.app)
-- **LinkedIn:** [linkedin.com/in/rodrigosouzafeliciano](https://www.linkedin.com/in/rodrigosouzafeliciano/)
-- **Online Resume:** [github.com/rodrigosouzafeliciano/curriculo-online](https://github.com/rodrigosouzafeliciano/curriculo-online)
+</div>
